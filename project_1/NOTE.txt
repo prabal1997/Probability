@@ -1,0 +1,5 @@
+AIM: How many data points do we need to be 99% certain that a certain data-set belongs to some specific probability distribution?
+
+NOTES:
+*The 'rand_viewer' function allows you to derive the DISTRIBUTION of a data-set
+*The 'rand_tester' function TESTS how 'correct' a certain data distribution is by comparing it to an ideal probability distribution
