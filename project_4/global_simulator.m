@@ -1,7 +1,7 @@
 function [ output_args ] = global_simulator( service_distr, arrival_distr )
-    arrival_rate = 1000;
+    arrival_rate = 600;
     arrival_mean = 1/(arrival_rate);
-    service_mean = 0.04;
+    service_mean = 0.005;
     
     chunk_size = 10000;
     
