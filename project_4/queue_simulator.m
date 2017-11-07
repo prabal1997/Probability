@@ -1,98 +1,136 @@
-function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_points, sim_time, sample_count )
+function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arrival_distr, sim_points, sim_time, sim_test_count)
 %SERVER_SIMULATOR simulates a server with infinite processors receving
 %requests one by one...
     
     %SIMULATION INPUT VARIABLES
-    arrival_rate = 52; %rate at which requests arrive per second
+    arrival_rate = 2^6; %rate at which requests arrive per second
     arrival_mean = 1/(arrival_rate);
-    service_mean = 0.032; %mean service time of a request
-%    service_distr = @rt_exp_inv_dist_func; %inverse probabilit distr. of service times
-%    arrival_distr = @rt_periodic_inv_distr;
-    queue_limit = Inf; %pending request(s) limit; extra requests are simply truncated
-    core_count = Inf; %refers to number of cores available for processing
-    sim_length = Inf; %number of seconds to simulate
-    error_thresh = 0.01; %refers to how much close the output needs to be close to the ideal scenario (in %)
+    service_mean = 2^(-5); %mean service time of a request
+    error_thresh = 0.001; %refers to how much close the output needs to be close to the ideal scenario (in %)
     ignorace_thresh = 10^-5; %refers to the scale at which 'e^-rho*t' gets replaced by '0'
-    ideal_avg = arrival_rate * service_mean; %this is the 'rho' value
+    ideal_avg = arrival_rate * service_mean;
     ideal_limit = exp(-1/ideal_avg)/(1-exp(-1/ideal_avg));
-       
-    sim_length_points = 0; %refers to how long the simulation needs to be
+    
+    %check how long the simulation needs to be
+    sim_length_points = 0;
     if (sim_points == 0)
-       sim_length_points = ceil(sim_time*arrival_rate);
-    else
-       sim_length_points = sim_points;
+        sim_length_points = sim_time*arrival_rate;
     end
+    if (sim_time == 0)
+        sim_length_points = sim_points;
+    end
+    
+    %initialize storage
+    start_test_count = 10;
+    storage_width = 1;
+    test_result_holder = zeros(start_test_count, storage_width);
 
-    %these are requests right before the entry of which we sample the
-    %number of busy servers
-    %sample_count = floor(linspace(1, sample_count, sample_count)*(sim_length_points/sample_count))  %refers to the numbr of time samples we take EVERY second
-    sample_dist_mean = sim_length_points/sample_count;
-    sample_count_num = sample_count;
-    sample_count = zeros(1, sample_count_num);
-    sample_total_sum  = 0;
-    for idx = 1:sample_count_num
-        sample_count = linspace((1/3)*sample_count_num, (2/3)*sample_count_num, sample_count_num);
-    end
-    sample_count = ceil(sample_count);
-    
-    %create a matrix to store all the data
-    test_count = 10000;
-    test_output = zeros(test_count, length(sample_count));
-    
-    exp_mu_sum = 0;
-    for test_idx = 1:test_count
-        %simulate arrival delays
-        arrival_delay = arrival_distr(rand(1, sim_length_points-1), arrival_mean);
-        
-        %calculate actual arrival timeline
-        arrival_timeline = zeros(1, sim_length_points);
-        for idx = 2:sim_length_points
-            arrival_timeline(idx) = arrival_timeline(idx-1) + arrival_delay(idx-1);
+    used_test_result_holder_idx = 0;
+    function [test_size] = push_results(input_row)
+        used_test_result_holder_idx = 1 + used_test_result_holder_idx;
+        %if a user exceeds the pre-set limit, treat the array as a typical
+        %'doubling' array
+        if (used_test_result_holder_idx > sim_test_count)
+            sim_test_count = Inf;
+        end
+        %check if the array requires size extension
+        if (used_test_result_holder_idx > size(test_result_holder, 1))
+            %calculate the new potential length
+            new_test_result_holder = 0;
+            if (sim_test_count ~= Inf)
+                start_test_count = sim_test_count;
+                new_test_result_holder = zeros(sim_test_count, storage_width);
+            else
+                start_test_count = 2*start_test_count;
+                new_test_result_holder = zeros(start_test_count, storage_width); 
+            end
+            %copy old elements onto the new array, delete old array
+            new_test_result_holder(1:size(test_result_holder, 1), 1:storage_width) =  test_result_holder;
+            test_result_holder = new_test_result_holder;
         end
         
-        %calculate service times, completion timelines
-        service_duration = service_distr(rand(1, sim_length_points), service_mean);
-        completion_timeline = arrival_timeline + service_duration;
-        
-        %calculate busy servers at each arrival
-        busy_servers = zeros(1, length(sample_count));
-        for idx = 1:length(sample_count)
-            arrival_time = arrival_timeline(sample_count(idx));
-            busy_servers(idx) = sum(1.0 * (arrival_time >= arrival_timeline(1:sample_count(idx)-1)) .* (arrival_time <= completion_timeline(1:sample_count(idx)-1)));;
-        end
-        
-        %only store the required outputs
-        test_output(test_idx, 1:end) = busy_servers;
+        %add the new line of data to the array
+        test_result_holder(used_test_result_holder_idx, 1:end) = input_row; 
     end
     
-    %find the running average across all sampled time-points
-    cla
-    averaged_test_output = test_output;
-    %average_starting_index = abs(floor(-(log(ignorace_thresh)*service_mean + 1/arrival_mean)*arrival_rate));
-    for idx = 1:length(sample_count)
-        for idx_2 = 2:test_count
-            averaged_test_output(idx_2, idx) = mean(test_output(1:idx_2-1, idx));
-        end
+    %starts a single test, produces and stores results
+    function [test_size] = perform_single_test()
+        %random number generator
+        function [output_vars] = multi_rv(required_elements, rv_count, inv_dist_type, mean)
+            %MULTI_RV: gives an array of SUMMED random numbers belonging to a
+            %given distribution
+            output_vars = zeros(1, required_elements);
+            for idx = 1:required_elements
+                output_vars(idx) = sum( inv_dist_type(rand(1, rv_count), mean/rv_count) );
+            end
+        end    
+        
+        %create arrival variables
+        arrival_delays = zeros(1, sim_length_points);
+        arrival_delays(2:end) = multi_rv(sim_length_points-1, 1, arrival_distr, arrival_mean);
+        
+        arrival_timeline = cumsum( arrival_delays );
+        
+        %create service delays, completion timeline
+        service_delays = multi_rv(sim_length_points, 1, service_distr, service_mean);
+        completion_timeline = arrival_timeline + service_delays;
+        
+        %count number of busy servers at the LAST arrival, push it onto the
+        %storage array
+        busy_servers_count = sum(1.0 * (arrival_timeline(end) >= arrival_timeline(1:end-1)) .* (arrival_timeline(end) < completion_timeline(1:end-1)));
+        push_results(busy_servers_count);
+        
+        %return appropriate data
+        test_size = used_test_result_holder_idx;
+        return;
     end
     
+
+    %perform the actual test appropriate number of times
+    cont_exec = true;
+    total_array_sum = 0;
+    while(cont_exec)
+        %run a test
+        perform_single_test();
+        
+        %calculate array average and error
+        total_array_sum = total_array_sum + test_result_holder(used_test_result_holder_idx, 1);
+        calc_mean = total_array_sum/used_test_result_holder_idx;
+        
+        %stop testing if the precision has been achieved
+        prec_val = abs(calc_mean-ideal_limit)/ideal_limit;
+        if (prec_val < error_thresh)
+            cont_exec = false;
+        end
+    end 
+   
+    %calculate running avg
+    running_avg =  test_result_holder(1:used_test_result_holder_idx);
+    running_avg = cumsum(running_avg);
+    for idx = 1:length(running_avg)
+        running_avg(idx) = running_avg(idx)/idx;
+    end
+    
+    %plot the entire recorded data
+    hold on
+
     %set graph properties
-    x_axis = linspace(1, test_count, test_count);
+    x_axis = linspace(1, used_test_result_holder_idx, used_test_result_holder_idx);
     grid_count = [20, 12];
     line_width = 1.75;
     xlim_array=[x_axis(1), x_axis(end)];
-    ylim_array=[2*ideal_limit*(5/11), 2*ideal_limit*(6/11)];
-    title('Busy Servers in a Multi-Server System Different Times');
+    ylim_array=[2*ideal_limit*(2/5), 2*ideal_limit*(3/5)];
+    title('Busy Servers in a Multi-Server System at some time ''t'' over multiple tests');
     xlabel('Number of Tests');
     ylabel('Busy Servers');
 
     %plot all these lines
-
     hold on;
-    plot_1 = plot(x_axis, averaged_test_output(1:end, end), 'b.');
-    plot_2 = plot(x_axis, smooth(x_axis, averaged_test_output(1:end, end), 0.1, 'rloess'), 'b--');
-    plot_3 = plot(x_axis, mean(averaged_test_output(1:end, end))*ones(1, test_count), 'k--');
-    plot_4 = plot(x_axis, ideal_limit*ones(1, test_count), 'r-');
-    %plot_5 = plot([average_starting_index, average_starting_index], ylim_array, 'g-');
+    calc_mean = running_avg(end);
+    plot_1 = plot(x_axis, running_avg, 'b.');
+    plot_2 = plot(x_axis, smooth(x_axis, running_avg, 0.1, 'loess'), 'b--');
+    plot_3 = plot(x_axis, mean(test_result_holder(1:used_test_result_holder_idx))*ones(1, used_test_result_holder_idx), 'k--');
+    plot_4 = plot(x_axis, ideal_limit*ones(1, used_test_result_holder_idx), 'r-');
     
     grid on;
     legend('Running Average', 'Filtered Running Average', 'Observed Running Average', 'Ideal Expected Value');
@@ -102,9 +140,8 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
     set(plot_1,'LineWidth', 1/20);
     set([plot_2, plot_3, plot_4],'LineWidth', line_width);
     %set(plot_5,'LineWidth', 2*line_width);
-    set(gca, 'xtick', floor(linspace(xlim_array(1), xlim_array(2),1+grid_count(1))) );
+    set(gca, 'xtick', floor(linspace(0, xlim_array(2),1+grid_count(1))) );
     set(gca, 'ytick', linspace(ylim_array(1), ylim_array(2),1+grid_count(2)));
     
-    %average_starting_index
 end
 
