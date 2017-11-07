@@ -14,7 +14,8 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
     error_thresh = 0.01; %refers to how much close the output needs to be close to the ideal scenario (in %)
     ignorace_thresh = 10^-5; %refers to the scale at which 'e^-rho*t' gets replaced by '0'
     ideal_avg = arrival_rate * service_mean; %this is the 'rho' value
-    
+    ideal_limit = exp(-1/ideal_avg)/(1-exp(-1/ideal_avg));
+       
     sim_length_points = 0; %refers to how long the simulation needs to be
     if (sim_points == 0)
        sim_length_points = ceil(sim_time*arrival_rate);
@@ -65,20 +66,45 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
     end
     
     %find the running average across all sampled time-points
+    cla
     averaged_test_output = test_output;
+    %average_starting_index = abs(floor(-(log(ignorace_thresh)*service_mean + 1/arrival_mean)*arrival_rate));
     for idx = 1:length(sample_count)
         for idx_2 = 2:test_count
             averaged_test_output(idx_2, idx) = mean(test_output(1:idx_2-1, idx));
         end
     end
     
-    %plot all these lines
+    %set graph properties
     x_axis = linspace(1, test_count, test_count);
-    for idx = 1:length(sample_count)
-        hold on
-        plot(x_axis, averaged_test_output(1:end, idx));
-    end
-    ideal_limit = exp(-1/ideal_avg)/(1-exp(-1/ideal_avg));
-    plot(x_axis, ideal_limit*ones(1, test_count), 'rO-')
+    grid_count = [20, 12];
+    line_width = 1.75;
+    xlim_array=[x_axis(1), x_axis(end)];
+    ylim_array=[2*ideal_limit*(5/11), 2*ideal_limit*(6/11)];
+    title('Busy Servers in a Multi-Server System Different Times');
+    xlabel('Number of Tests');
+    ylabel('Busy Servers');
+
+    %plot all these lines
+
+    hold on;
+    plot_1 = plot(x_axis, averaged_test_output(1:end, end), 'b.');
+    plot_2 = plot(x_axis, smooth(x_axis, averaged_test_output(1:end, end), 0.1, 'rloess'), 'b--');
+    plot_3 = plot(x_axis, mean(averaged_test_output(1:end, end))*ones(1, test_count), 'k--');
+    plot_4 = plot(x_axis, ideal_limit*ones(1, test_count), 'r-');
+    %plot_5 = plot([average_starting_index, average_starting_index], ylim_array, 'g-');
+    
+    grid on;
+    legend('Running Average', 'Filtered Running Average', 'Observed Running Average', 'Ideal Expected Value');
+    xlim(xlim_array);
+    ylim(ylim_array);
+
+    set(plot_1,'LineWidth', 1/20);
+    set([plot_2, plot_3, plot_4],'LineWidth', line_width);
+    %set(plot_5,'LineWidth', 2*line_width);
+    set(gca, 'xtick', floor(linspace(xlim_array(1), xlim_array(2),1+grid_count(1))) );
+    set(gca, 'ytick', linspace(ylim_array(1), ylim_array(2),1+grid_count(2)));
+    
+    %average_starting_index
 end
 
