@@ -80,8 +80,5 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
     end
     ideal_limit = exp(-1/ideal_avg)/(1-exp(-1/ideal_avg));
     plot(x_axis, ideal_limit*ones(1, test_count), 'rO-')
-    
-    %observed data
-    observed_data = 
 end
 
