@@ -3,9 +3,9 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
 %requests one by one...
     
     %SIMULATION INPUT VARIABLES
-    arrival_rate = 200; %rate at which requests arrive per second
+    arrival_rate = 52; %rate at which requests arrive per second
     arrival_mean = 1/(arrival_rate);
-    service_mean = 0.0035; %mean service time of a request
+    service_mean = 0.032; %mean service time of a request
 %    service_distr = @rt_exp_inv_dist_func; %inverse probabilit distr. of service times
 %    arrival_distr = @rt_periodic_inv_distr;
     queue_limit = Inf; %pending request(s) limit; extra requests are simply truncated
@@ -30,14 +30,7 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
     sample_count = zeros(1, sample_count_num);
     sample_total_sum  = 0;
     for idx = 1:sample_count_num
-        sample_total_sum = sample_total_sum + rt_exp_inv_dist_func(rand(1,1), sample_dist_mean);
-        sample_count(idx) = sample_total_sum;
-    end
-    if (sample_count(end)>sim_length_points)
-        sample_count = sample_count * (sim_length_points/sample_count(end));
-        if (sample_count(end)>sim_length_points)
-            sample_count(end) = sample_count(end-1);
-        end
+        sample_count = linspace((1/3)*sample_count_num, (2/3)*sample_count_num, sample_count_num);
     end
     sample_count = ceil(sample_count);
     
@@ -45,6 +38,7 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
     test_count = 10000;
     test_output = zeros(test_count, length(sample_count));
     
+    exp_mu_sum = 0;
     for test_idx = 1:test_count
         %simulate arrival delays
         arrival_delay = arrival_distr(rand(1, sim_length_points-1), arrival_mean);
@@ -62,10 +56,8 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
         %calculate busy servers at each arrival
         busy_servers = zeros(1, length(sample_count));
         for idx = 1:length(sample_count)
-            arrival_time = arrival_timeline(sample_count(idx)); 
-            var_1 = sum(1.0 * (arrival_time >= arrival_timeline(1:sample_count(idx)-1)) .* (arrival_time <= completion_timeline(1:sample_count(idx)-1)));
-            var_2 = sum(1.0 * (arrival_time >= arrival_timeline) .* (arrival_time < completion_timeline));
-            busy_servers(idx) = var_1;
+            arrival_time = arrival_timeline(sample_count(idx));
+            busy_servers(idx) = sum(1.0 * (arrival_time >= arrival_timeline(1:sample_count(idx)-1)) .* (arrival_time <= completion_timeline(1:sample_count(idx)-1)));;
         end
         
         %only store the required outputs
@@ -86,8 +78,10 @@ function [ output_args ] = queue_simulator( service_distr, arrival_distr, sim_po
         hold on
         plot(x_axis, averaged_test_output(1:end, idx));
     end
-    plot(x_axis, ideal_avg*ones(1, test_count), 'rO-')
-    mean(mean(averaged_test_output))
+    ideal_limit = exp(-1/ideal_avg)/(1-exp(-1/ideal_avg));
+    plot(x_axis, ideal_limit*ones(1, test_count), 'rO-')
     
+    %observed data
+    observed_data = 
 end
 
