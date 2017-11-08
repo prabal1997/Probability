@@ -6,7 +6,7 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
     arrival_rate = 2^6; %rate at which requests arrive per second
     arrival_mean = 1/(arrival_rate);
     service_mean = 2^(-5); %mean service time of a request
-    error_thresh = 0.001; %refers to how much close the output needs to be close to the ideal scenario (in %)
+    error_thresh = 0.0001; %refers to how much close the output needs to be close to the ideal scenario (in %)
     ignorace_thresh = 10^-5; %refers to the scale at which 'e^-rho*t' gets replaced by '0'
     ideal_avg = arrival_rate * service_mean;
     ideal_limit = exp(-1/ideal_avg)/(1-exp(-1/ideal_avg));
@@ -93,9 +93,6 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
     while(cont_exec)
         %track excessive runtime using counter
         counter = counter + 1;
-        if (counter > 1000)
-            break;
-        end
         
         %run a test
         perform_single_test();
@@ -111,7 +108,6 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
         end
     end 
    
-%{
     %calculate running avg
     running_avg =  test_result_holder(1:used_test_result_holder_idx);
     running_avg = cumsum(running_avg);
@@ -150,6 +146,6 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
     %set(plot_5,'LineWidth', 2*line_width);
     set(gca, 'xtick', floor(linspace(0, xlim_array(2),1+grid_count(1))) );
     set(gca, 'ytick', linspace(ylim_array(1), ylim_array(2),1+grid_count(2)));
-%}    
+    
 end
 

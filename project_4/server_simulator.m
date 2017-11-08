@@ -93,7 +93,7 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
         total_avg = (total_avg*(trial_count-1)+obs_sum/sim_length_points)/(trial_count);
         abs_err = (total_avg-ideal_limit)/ideal_limit;
         
-        if (abs(abs_err) <= error_thresh || trial_count >= 500)
+        if (abs(abs_err) <= error_thresh)
             cont_exec = false;
         end
         %abs_err
@@ -104,7 +104,6 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
     
     'Done'
     
-%{
     %calculate running avg
     running_avg =  test_result_holder(1:used_test_result_holder_idx);
     running_avg = cumsum(running_avg);
@@ -140,6 +139,6 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
     set([plot_2, plot_3, plot_4],'LineWidth', line_width);
     set(gca, 'xtick', (linspace(xlim_array(1), xlim_array(2),1+grid_count(1))) );
     set(gca, 'ytick', linspace(ylim_array(1), ylim_array(2),1+grid_count(2)));
-%} 
+
 end
 
