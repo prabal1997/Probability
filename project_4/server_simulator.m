@@ -1,7 +1,9 @@
-function [ output_args ] = server_simulator( service_distr, arrival_distr, sim_length_points)
+function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_length_points)
 %SERVER_SIMULATOR simulates a server with infinite processors receving
 %requests one by one...
     
+    set(0, 'DefaultFigureRenderer', 'painters');
+
     %SIMULATION INPUT VARIABLES
     arrival_rate = 52; %rate at which requests arrive per second
     arrival_mean = 1/(arrival_rate);
@@ -63,6 +65,7 @@ function [ output_args ] = server_simulator( service_distr, arrival_distr, sim_l
         busy_servers_count = zeros(1, sim_length_points);
         total_sum = 0;
         for idx = 1:sim_length_points 
+
             busy_servers_count(idx) = sum(1.0 * (arrival_timeline(idx) >= arrival_timeline(1:idx-1)) .* (arrival_timeline(idx) < completion_timeline(1:idx-1)));
             total_sum = total_sum + busy_servers_count(idx);
         end
@@ -89,14 +92,19 @@ function [ output_args ] = server_simulator( service_distr, arrival_distr, sim_l
         %find the running average, terminate if target met
         total_avg = (total_avg*(trial_count-1)+obs_sum/sim_length_points)/(trial_count);
         abs_err = (total_avg-ideal_limit)/ideal_limit;
-        if (abs(abs_err) <= error_thresh)
+        
+        if (abs(abs_err) <= error_thresh || trial_count >= 500)
             cont_exec = false;
         end
-        abs_err
-        total_avg
-        ideal_limit
+        %abs_err
+        %total_avg
+        %ideal_limit
     end
+    trial_count = trial_count*sim_length_points*arrival_mean;
     
+    'Done'
+    
+%{
     %calculate running avg
     running_avg =  test_result_holder(1:used_test_result_holder_idx);
     running_avg = cumsum(running_avg);
@@ -132,6 +140,6 @@ function [ output_args ] = server_simulator( service_distr, arrival_distr, sim_l
     set([plot_2, plot_3, plot_4],'LineWidth', line_width);
     set(gca, 'xtick', (linspace(xlim_array(1), xlim_array(2),1+grid_count(1))) );
     set(gca, 'ytick', linspace(ylim_array(1), ylim_array(2),1+grid_count(2)));
- 
+%} 
 end
 

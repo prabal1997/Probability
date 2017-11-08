@@ -89,7 +89,14 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
     %perform the actual test appropriate number of times
     cont_exec = true;
     total_array_sum = 0;
+    counter = 0;
     while(cont_exec)
+        %track excessive runtime using counter
+        counter = counter + 1;
+        if (counter > 1000)
+            break;
+        end
+        
         %run a test
         perform_single_test();
         
@@ -104,6 +111,7 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
         end
     end 
    
+%{
     %calculate running avg
     running_avg =  test_result_holder(1:used_test_result_holder_idx);
     running_avg = cumsum(running_avg);
@@ -142,6 +150,6 @@ function [ used_test_result_holder_idx ] = queue_simulator( service_distr, arriv
     %set(plot_5,'LineWidth', 2*line_width);
     set(gca, 'xtick', floor(linspace(0, xlim_array(2),1+grid_count(1))) );
     set(gca, 'ytick', linspace(ylim_array(1), ylim_array(2),1+grid_count(2)));
-    
+%}    
 end
 
