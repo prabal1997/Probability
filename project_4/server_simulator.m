@@ -1,4 +1,6 @@
 function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_length_points)
+%server_simulator(@rt_exp_inv_dist_func, @rt_periodic_inv_distr, 1000);
+
 %SERVER_SIMULATOR simulates a server with infinite processors receving
 %requests one by one...
     
@@ -7,7 +9,7 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
     %SIMULATION INPUT VARIABLES
     arrival_rate = 52; %rate at which requests arrive per second
     arrival_mean = 1/(arrival_rate);
-    service_mean = 0.032; %mean service time of a request
+    service_mean = 0.0032; %mean service time of a request
     error_thresh = 0.001; %refers to how much close the output needs to be close to the ideal scenario (in %)
     ignorace_thresh = 10^-5; %refers to the scale at which 'e^-rho*t' gets replaced by '0'
     ideal_avg = arrival_rate * service_mean;
@@ -64,7 +66,7 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
         %storage array
         busy_servers_count = zeros(1, sim_length_points);
         total_sum = 0;
-        for idx = 1:sim_length_points 
+        for idx = 2:sim_length_points 
 
             busy_servers_count(idx) = sum(1.0 * (arrival_timeline(idx) >= arrival_timeline(1:idx-1)) .* (arrival_timeline(idx) < completion_timeline(1:idx-1)));
             total_sum = total_sum + busy_servers_count(idx);
@@ -93,7 +95,7 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
         total_avg = (total_avg*(trial_count-1)+obs_sum/sim_length_points)/(trial_count);
         abs_err = (total_avg-ideal_limit)/ideal_limit;
         
-        if (abs(abs_err) <= error_thresh)
+        if (abs(abs_err) <= error_thresh || trial_count > 300)
             cont_exec = false;
         end
         %abs_err
@@ -125,6 +127,7 @@ function [ trial_count ] = server_simulator( service_distr, arrival_distr, sim_l
 
     %plot all these lines
     hold on;
+    cla
     plot_1 = plot(arrival_mean*x_axis, running_avg, 'b.');
     plot_2 = plot(arrival_mean*x_axis, smooth(arrival_mean*x_axis, running_avg, 0.1, 'rloess'), 'b--');
     plot_3 = plot(arrival_mean*x_axis, running_avg(end)*ones(1, used_test_result_holder_idx), 'k--');
