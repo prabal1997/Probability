@@ -1,7 +1,8 @@
-for d = 20:10:100
+for d = [10]
     tic
-    people = 3;
-    fil_name = strcat("200000-", int2str(d), int2str(people),".dat")
+    people = 4;
+%    fil_name = strcat("200000-", int2str(d), int2str(people),".dat")
+    fil_name = 'set-10-500.dat';
     arr_y = csvread(fil_name);
     
     arr_y_2 = cumsum(arr_y.');
@@ -11,8 +12,7 @@ for d = 20:10:100
         arr_y_2(idx) = arr_y_2(idx)/idx;
     end
     
-    
-    bin_count = 300;
+    bin_count = 200;
     arr_x = 1:bin_count;
     bin_width = max(arr_y)/bin_count;
 
@@ -25,7 +25,7 @@ for d = 20:10:100
     figure
     hold on
     cla
-    ezdraw(bin_width*arr_x, bins, false, true, {strcat('Empirical Density Function of Completion Times with d= ', int2str(d)) , 'Completion Time', 'Frequency'},{'Density Function', 'Filtered Output'}, {'b.','k-','r-'}, true, 0, 0, 0, {0.15*(30/d), 'loess'}, 1.5, [20,12], false);
+    ezdraw(bin_width*arr_x, bins, false, false, {strcat('Empirical Density Function of Completion Times with d= ', int2str(d)) , 'Completion Time', 'Frequency'},{'Density Function'}, {'b.','k-','r-'}, true, 0 , 0, 0, {0.15*(30/d), 'loess'}, 1.5, [20,12], false);
     
     toc
     
