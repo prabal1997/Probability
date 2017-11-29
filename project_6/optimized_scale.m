@@ -1,10 +1,11 @@
+%commit again
 tic;
 
 people = 4;
 money_range = 1:200;
 
 sim_count = 2000;
-sim_chunk = 1000;
+sim_chunk = 1000;  
 
 mean_storage_array = zeros(1, length(money_range));
 counter = 1;
