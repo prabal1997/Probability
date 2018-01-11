@@ -25,7 +25,7 @@ The file `final_repo\'Gambler's Ruin' Simulation\optimized_gen_2.m` contains the
 <img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture2.png" alt="Diagram representing periodic requests with random service times" width="600" align="center">
 </p>
 <p align="center">
-  <b>Figure 2</b> Periodic incoming requests, random service durations.
+  <b>Figure 2:</b> Periodic incoming requests, random service durations.
 </p>
 
 The most important project related to the queues was **Multiserver Queue Analysis**, which analysed a load-balancer having access to a large number of servers. Given that the load-balancer receives periodic requests, and that the amount of time taken to service request *k* is *S<sub>k</sub>*, an exponential random variable, what is the expected number of busy servers E[B(*t*)]? Here, B(*t*) is the number of busy servers at some time *t*.
