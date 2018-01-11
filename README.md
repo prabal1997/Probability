@@ -9,19 +9,49 @@ The problem revolves around the completion time of a game. It is evident that th
 
 The file `final_repo\'Gambler's Ruin' Simulation\optimized_gen_2.m` contains the MATLAB code I developed after multiple iterations of testing and improvement. The file `final_repo\'Gambler's Ruin' Simulation\'Gambler Ruin' Simulation.pdf` contains a summary of the results I found. Moreover, I have also explained the techniques I used to optimize my simulations throughout the term using the Gambler's Ruin problem as an example in file `final_repo\Research Domain\Simulation and Analysis of Stochastic Processes.pdf`.
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture1.png" alt="Results from a Gamblers Ruin Simulation" width="600" align="center">
+</p>
+<p align="center">
+  <b>Figure 1:</b> Data showing mean completion times for <i>k</i>=4, 5, and 6 for different values of <i>m</i>.
+</p>
+
+
 ## Queue Analysis
 
 ### Multiserver Queue Analysis
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture2.png" alt="Diagram representing periodic requests with random service times" width="600" align="center">
+</p>
+<p align="center">
+  <b>Figure 2</b> Periodic incoming requests, random service durations.
+</p>
+
 The most important project related to the queues was **Multiserver Queue Analysis**, which analysed a load-balancer having access to a large number of servers. Given that the load-balancer receives periodic requests, and that the amount of time taken to service request *k* is *S<sub>k</sub>*, an exponential random variable, what is the expected number of busy servers E[B(*t*)]? Here, B(*t*) is the number of busy servers at some time *t*.
 
 This problem was of particular interest to me due to it's direct applicability what I study in Computer Engineering here at the University of Waterloo. I was able to obtain a mathematical expression for E[B(*t*)] using tools generally used in Signal Processing (Dirac-delta impulse, Convolution, etc.). Additionally, I was also able to find the empirical evidence supporting this.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture3.png" alt="Expression for the expected number of pending requests the server has" width="400"/>
+</p>
+<p align="center">
+  <b>Figure 3:</b> Expression for E[B(<i>t</i>)], where <i>p</i> is the product of arrival rate and mean service time.
+</p>
 
 The file `final_repo\Queues\Multi-server System Analysis.pdf` contains the found expression and a summary of the empirical evidence. The file `final_repo\Research Domain\Multi-server System Analysis.pdf` contains the derivation of the obtained expression. The files `final_repo\Queues\queue_simulator.m`, and `final_repo\Queues\server_simulator.m` contain the simulation code for this problem.
 
 ### Random Queue Analysis
 
 This project invovled analyzing a simpler random queue. The aim of this project was to act as a precursor the the above problem. In this problem, the delays between consecutive arriving requests were exponential random variables, and so were the service times. The aim was to analyze the system as the inter-arrival delays and service times became more and more deterministic.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture4.png" alt="Graph showing the waiting time for an arriving request" width="900" align="center">
+</p>
+<p align="center">
+  <b>Figure 4:</b> Graph showing wait time for some request <i>k</i> when it enters the queue.
+</p>
+
 
 The file `final_repo\Queues\Random Queueing System Analysis.pdf` contains a summary of the problem and the empirically obtained results.
 
@@ -36,6 +66,15 @@ This is a tool I developed and improved throughout my coop term. The file `final
 
 All of the above mentioned properties are modifiable and can be changed it you wish to. For more information regarding the `ezdraw.m` function, refer to the comments inside it.
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture6.png" alt="Some data plotted using the ezdraw utility" width="1100" align="center">
+</p>
+
+<p align="center">
+  <b>Figure 5:</b> Some data, mean, and filtered data drawn using the graphing utility.
+</p>
+
+
 ## Other Projects
 
 ### Approximation Complex Derivatives
@@ -43,3 +82,11 @@ All of the above mentioned properties are modifiable and can be changed it you w
 This is something that I came up with at the end of my 2A term. This involves representing a funciton in terms of its Fourier series expansion, and then exploiting the fact that {sin(*w*), cos(*w*)} is a basis for the vector space of all linear combinations of sin(*w*), cos(*w*).
 
 This technique does have issues though. There is only a certain class of functions whose derivatives can be approximated in this manner. Using one of those functions as an example, I calculated the expressions for -1<sup>th</sup>, -0.5<sup>th</sup>, *i*<sup>th</sup>, -*x*<sup>*-1*<sup>th</sup></sup> derivative of a function. Please read the file `final_repo\Research Domain\Calculating Complex Derivatives.pdf` for more details.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/prabal1997/Probability/master/images/Picture5.png" alt="Derivative of an order m, where m is a function" width="600" align="center">
+</p>
+
+<p align="center">
+  <b>Figure 6:</b> Calculating the <i>m</i><sup>th</sup> derivative of the square wave, where <i>m = -x<sup>-1</sup></i>.
+</p>
